@@ -1,6 +1,6 @@
-#version 120
+#version 460 compatibility
 
-varying vec2 texcoord;
+out vec2 texcoord;
 
 void main()
 {

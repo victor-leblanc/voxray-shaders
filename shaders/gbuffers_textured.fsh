@@ -1,31 +1,29 @@
-#version 120
+#version 460 compatibility
 
 uniform sampler2D texture;
+uniform sampler2D normals;
+uniform sampler2D specular;
 uniform sampler2D lightmap;
 
-uniform vec4 entityColor;
-uniform float blindness;
-uniform int isEyeInWater;
-
-varying vec4 color;
-varying vec3 norm;
-varying vec2 coord0;
-varying vec2 coord1;
+in vec3 normal;
+in vec3 diffuse;
+in vec2 texcoord;
+in vec2 lmcoord;
+in mat3 tbn;
 
 /* DRAWBUFFERS:02 */
 
+#define NORMAL_STRENGTH 0.25
+
 void main()
 {
-    vec3 light = (1. - blindness) * texture2D(lightmap, coord1).rgb;
+    vec4 color = texture2D(texture, texcoord);
+    color.rgb *= texture2D(lightmap, lmcoord).rgb * diffuse;
 
-    vec4 col = color * vec4(light, 1.) * texture2D(texture,coord0);
-    col.rgb = mix(col.rgb, entityColor.rgb, entityColor.a);
+    vec4 texnormal = texture2D(normals, texcoord);
+    vec3 decnormal = normalize(vec3(texnormal.rg, sqrt(1. - dot(texnormal.rg, texnormal.rg))) * 2. - 1.);
+    vec3 finalnormal = mix(normal, tbn * decnormal, NORMAL_STRENGTH);
 
-    float fog = (isEyeInWater>0) ? 1.-exp(-gl_FogFragCoord * gl_Fog.density):
-    clamp((gl_FogFragCoord-gl_Fog.start) * gl_Fog.scale, 0., 1.);
-
-    col.rgb = mix(col.rgb, gl_Fog.color.rgb, fog);
-
-    gl_FragData[0] = col;
-    gl_FragData[1] = vec4(norm * .5 + .5, step(col.a, .1));
+    gl_FragData[0] = color;
+    gl_FragData[1] = vec4(finalnormal * .5 + .5, 1.);
 }

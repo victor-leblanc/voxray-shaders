@@ -1,4 +1,4 @@
-#version 120
+#version 460 compatibility
 
 uniform sampler2D gcolor;
 uniform sampler2D gnormal;
@@ -16,7 +16,7 @@ uniform vec3 shadowLightPosition;
 uniform float near;
 uniform float far;
 
-varying vec2 texcoord;
+in vec2 texcoord;
 
 #include "lib/voxel.glsl"
 
@@ -76,28 +76,34 @@ Voxel raytrace(vec3 p, vec3 d)
 
 void main()
 {
+    vec3 color = texture2D(gcolor, texcoord).rgb;
+    vec3 normal = texture2D(gnormal, texcoord).rgb * 2. - 1.;
+
     vec4 ndc = gbufferProjectionInverse * vec4(texcoord * 2. - 1., 1., 1.);
     ndc = gbufferModelViewInverse * vec4(ndc.xyz / ndc.w, 1.);
-    vec3 ndcdir = normalize(ndc.xyz / far / 2.);
+    vec3 fragpos = normalize(ndc.xyz);
+    float ndotu = dot(normal, fragpos);
 
     vec3 feetoffset = gbufferModelViewInverse[3].xyz;
-    vec3 ndcplayer = .5 - fract(-cameraPosition + .5) + feetoffset;
+    vec3 playerpos = .5 - fract(-cameraPosition + .5) + feetoffset;
+
     vec3 depth0 = depth(depthtex0, texcoord);
     vec3 depth1 = depth(depthtex1, texcoord);
-    float water = float(depth0.z < depth1.z);
-    vec3 voxpos = length(depth1) * ndcdir + ndcplayer;
+    bool water = depth0.z < depth1.z;
+    vec3 worldpos = fragpos * length(depth0) + playerpos;
 
-    vec3 normal = texture2D(gnormal, texcoord).rgb * 2. - 1.;
     vec3 lightpos = normalize(mat3(gbufferModelViewInverse) * shadowLightPosition);
-    Voxel voxshadow = raytrace(voxpos, lightpos);
-    vec3 diffuse = mix(vec3(1.2, 1.1, 1.), vec3(.4, .5, .7), min(max(voxshadow.color.a, 1. - dot(normal, lightpos)), 1.));
-    vec3 color = texture2D(gcolor, texcoord).rgb * diffuse;
+    float ndotl = dot(normal, lightpos);
 
-    Voxel voxreflection = raytrace(voxpos, reflect(ndcdir, normal));
+    Voxel voxshadow = raytrace(worldpos, lightpos);
+    vec3 diffuse = mix(vec3(1.2, 1.1, 1.), vec3(.4, .5, .6), min(max(voxshadow.color.a, 1. - ndotl), 1.));
+    color *= diffuse;
+
+    Voxel voxreflection = raytrace(worldpos, reflect(fragpos, normal));
     vec3 reflection = mix(vec3(.6, .8, 1.), voxreflection.color.rgb, voxreflection.color.a);
-    color = mix(color, reflection, 0.5);
+    color = mix(color, reflection, (1. - abs(ndotu)) * (water ? 1. : .1));
 
-    Voxel v = raytrace(voxpos, ndcdir);
+    //Voxel v = raytrace(worldpos, fragpos);
     //color = v.color.rgb;
 
     gl_FragData[0] = vec4(color, 1.);

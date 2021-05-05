@@ -1,32 +1,33 @@
-#version 120
+#version 460 compatibility
 
+attribute vec4 at_tangent;
 attribute float mc_Entity;
-attribute vec3 at_midBlock;
 
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
 uniform vec3 cameraPosition;
 
-varying vec4 color;
-varying vec3 norm;
-varying vec2 coord0;
-varying vec2 coord1;
+out vec3 normal;
+out vec3 diffuse;
+out vec2 texcoord;
+out vec2 lmcoord;
+out mat3 tbn;
 
 void main()
 {
-    vec3 pos = (gl_ModelViewMatrix * gl_Vertex).xyz;
-    pos = (gbufferModelViewInverse * vec4(pos,1)).xyz;
+    gl_Position = ftransform();
 
-    gl_Position = gl_ProjectionMatrix * gbufferModelView * vec4(pos,1);
-    gl_FogFragCoord = length(pos);
+    normal = gl_Normal;
+    vec3 tangent = normalize(at_tangent.xyz);
+    vec3 binormal = cross(tangent, normal) * sign(at_tangent.w);
+    tbn = mat3(tangent, binormal, normal);
+    
+    if (mc_Entity == 1.) {
+        normal = vec3(0., 1., 0.);
+    }
 
-    vec3 normal = gl_NormalMatrix * gl_Normal;
-    norm = (gbufferModelViewInverse*vec4(normal,0)).xyz;
-    normal = (mc_Entity==1.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,0)).xyz;
-
-    float light = .8-.25*abs(normal.x*.9+normal.z*.3)+normal.y*.2;
-
-    color = vec4(gl_Color.rgb*light, gl_Color.a);
-    coord0 = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-    coord1 = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
+    float light = .8 - .25 * abs(normal.x * .9 + normal.z * .3) + normal.y * .2;
+    diffuse = gl_Color.rgb * light;
+    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).st;
+    lmcoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).st;
 }

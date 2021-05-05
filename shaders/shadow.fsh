@@ -1,9 +1,9 @@
-#version 120
+#version 460 compatibility
 
 uniform sampler2D texture;
 
-varying vec4 color;
-varying vec2 texcoord;
+in vec4 color;
+in vec2 texcoord;
 
 /* DRAWBUFFERS:0 */
 

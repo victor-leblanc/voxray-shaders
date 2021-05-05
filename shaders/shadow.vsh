@@ -1,4 +1,4 @@
-#version 120
+#version 460 compatibility
 
 attribute float mc_Entity;
 attribute vec2 mc_midTexCoord;
@@ -6,8 +6,8 @@ attribute vec3 at_midBlock;
 
 uniform mat4 shadowModelViewInverse;
 
-varying vec4 color;
-varying vec2 texcoord;
+out vec4 color;
+out vec2 texcoord;
 
 #include "lib/voxel.glsl"
 
