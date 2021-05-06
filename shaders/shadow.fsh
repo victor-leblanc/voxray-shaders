@@ -1,9 +1,11 @@
 #version 460 compatibility
-
-uniform sampler2D texture;
+#define GBUFFER
+#define FRAGMENT
 
 in vec4 color;
 in vec2 texcoord;
+
+uniform sampler2D texture;
 
 /* DRAWBUFFERS:0 */
 
