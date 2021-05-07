@@ -26,7 +26,7 @@ void main()
         vec3 voxelpos = floor(worldpos + at_midBlock / 64.);
         vec2 pixelpos = sign(texcoord - mc_midTexCoord.xy) / shadowMapResolution;
 
-        vec2 packedvoxel = pack_voxelmap(voxelpos) * 2. - 1. + pixelpos;
+        vec2 packedvoxel = packvoxel(voxelpos) * 2. - 1. + pixelpos;
         gl_Position = vec4(packedvoxel, 0., 1.);
     }
 }

@@ -13,8 +13,6 @@ uniform sampler2D normals;
 uniform sampler2D specular;
 uniform sampler2D lightmap;
 
-#include "lib/voxel.glsl"
-
 /* DRAWBUFFERS:01 */
 
 #define NORMAL_STRENGTH 0.25

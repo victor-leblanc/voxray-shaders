@@ -1,0 +1,35 @@
+#ifndef COMMON_PROGRAM_COMMON
+#define COMMON_PROGRAM_COMMON
+
+    void computecommon(inout vec3 color, in float depth, in bool water) {
+        vec3 normal = texture2D(colortex1, texcoord).rgb * 2. - 1.;
+
+        vec3 ndcpos = vec3(texcoord, depth);
+        vec3 viewpos = ndctoview(ndcpos);
+        vec3 worldpos = mat3(gbufferModelViewInverse) * viewpos;
+        vec3 playerpos = .5 - fract(-cameraPosition + .5) + gbufferModelViewInverse[3].xyz;
+        vec3 voxelpos = worldpos + playerpos;
+        vec3 moonpos = mat3(gbufferModelViewInverse) * moonPosition;
+        vec3 sunpos = mat3(gbufferModelViewInverse) * sunPosition;
+
+        vec3 normworldpos = normalize(worldpos);
+        vec3 normmoonpos = normalize(moonpos);
+        vec3 normsunpos = normalize(sunpos);
+
+        float ndotl = dot(normal, normsunpos);
+        float ndotu = dot(normal, normworldpos);
+
+        float dither = bayer8(texcoord * vec2(viewWidth, viewHeight));
+        Voxel voxshadow = voxeltrace(voxelpos, normalize(sunpos + (dither * 2. - 1.) * 5.));
+        vec3 diffuse = mix(vec3(1.2, 1.1, 1.), vec3(.4, .5, .6), min(max(voxshadow.color.a, 1. - ndotl), 1.));
+        color *= diffuse;
+
+        Voxel voxreflection = voxeltrace(voxelpos, reflect(normworldpos, normal));
+        vec3 reflection = mix(vec3(.6, .8, 1.), voxreflection.color.rgb, voxreflection.color.a);
+        color = mix(color, reflection, (1. - abs(ndotu)) * (water ? 0.5 : 0.1));
+
+        Voxel voxvl = voxeltrace(worldpos * dither + playerpos, normsunpos);
+        color = mix(color, vec3(1.2, 1.1, 1.), (1. - voxvl.color.a) * 0.25);
+    }
+
+#endif
