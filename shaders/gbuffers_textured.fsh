@@ -15,7 +15,7 @@ uniform sampler2D lightmap;
 
 #include "lib/voxel.glsl"
 
-/* DRAWBUFFERS:02 */
+/* DRAWBUFFERS:01 */
 
 #define NORMAL_STRENGTH 0.25
 
@@ -27,8 +27,6 @@ void main()
     vec4 texnormal = texture2D(normals, texcoord);
     vec3 decnormal = normalize(vec3(texnormal.rg, sqrt(1. - dot(texnormal.rg, texnormal.rg))) * 2. - 1.);
     vec3 finalnormal = mix(normal, tbn * decnormal, NORMAL_STRENGTH);
-
-
 
     gl_FragData[0] = color;
     gl_FragData[1] = vec4(finalnormal * .5 + .5, 1.);

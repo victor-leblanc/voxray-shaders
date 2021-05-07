@@ -55,7 +55,6 @@
         return 2.0 * near * far / (far + near - (depth * 2. - 1.) * (far - near));
     }
 
-    /* space helper */
     #ifdef FRAGMENT
         #ifdef COMPOSITE
             vec3 getndc(in vec2 texcoord, in sampler2D depthsampler) {
@@ -67,17 +66,4 @@
             }
         #endif
     #endif
-
-    mat3 gettbn(in vec3 normal) {
-        return abs(normal.y) > abs(normal.x) && abs(normal.y) > abs(normal.z) ? mat3(
-            1., 0., 0.,
-            0., 0., sign(normal.y),
-            normal
-        ) : mat3(
-            sign(normal.z), 0.0, -sign(normal.x),
-            0., -1., 0.,
-            normal
-        );
-    }
-
 #endif

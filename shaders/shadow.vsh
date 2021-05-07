@@ -17,7 +17,7 @@ void main()
     color = gl_Color;
     texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).st;
 
-    if (mc_Entity.x == 1.) {
+    if (mc_Entity.x > 9999.) {
         gl_Position = vec4(0.);
     } else {
         vec4 viewpos = (gl_ModelViewMatrix * gl_Vertex);

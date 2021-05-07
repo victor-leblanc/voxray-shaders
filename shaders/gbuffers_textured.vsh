@@ -15,12 +15,11 @@ void main()
     gl_Position = ftransform();
 
     normal = gl_Normal;
+    diffuse = gl_Color.rgb;
+    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).st;
+    lmcoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).st;
+
     vec3 tangent = normalize(at_tangent.xyz);
     vec3 binormal = cross(tangent, normal) * sign(at_tangent.w);
     tbn = mat3(tangent, binormal, normal);
-
-    float light = .8 - .25 * abs(normal.x * .9 + normal.z * .3) + normal.y * .2;
-    diffuse = gl_Color.rgb * light;
-    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).st;
-    lmcoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).st;
 }

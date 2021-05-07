@@ -29,7 +29,7 @@ vec2 pack_voxelmap(in vec3 block) {
         //vec3 nor;
     };
 
-    Voxel raytrace(in vec3 position, in vec3 direction) {
+    Voxel voxeltrace(in vec3 position, in vec3 direction) {
         vec3 s = sign(direction);
         vec3 ray = s / direction;
         vec4 color = vec4(0.);
