@@ -27,5 +27,5 @@ void main()
     vec3 finalnormal = mix(normal, tbn * decnormal, NORMAL_STRENGTH);
 
     gl_FragData[0] = color;
-    gl_FragData[1] = vec4(finalnormal * .5 + .5, 1.);
+    gl_FragData[1] = vec4(finalnormal, 1.);
 }
