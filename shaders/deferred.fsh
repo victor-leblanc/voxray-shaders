@@ -10,10 +10,8 @@ uniform sampler2D depthtex0;
 
 uniform vec3 moonPosition;
 uniform vec3 sunPosition;
+uniform vec3 upPosition;
 
-#include "lib/sample.glsl"
-#include "lib/space.glsl"
-#include "lib/voxel.glsl"
 #include "program/common.glsl"
 
 /* DRAWBUFFERS:0 */

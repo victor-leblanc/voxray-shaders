@@ -1,7 +1,12 @@
-#define MAX_LIGHTS 8
+#define MAX_LIGHTS 2
 
 #ifndef COMMON_PROGRAM_COMMON
 #define COMMON_PROGRAM_COMMON
+
+    #include "../lib/sample.glsl"
+    #include "../lib/space.glsl"
+    #include "../lib/std.glsl"
+    #include "../lib/voxel.glsl"
 
     struct Light {
         vec3 position;
@@ -20,8 +25,10 @@
         vec3 voxelpos = worldpos + playerpos;
         vec3 moonpos = mat3(gbufferModelViewInverse) * moonPosition;
         vec3 sunpos = mat3(gbufferModelViewInverse) * sunPosition;
+        vec3 uppos = mat3(gbufferModelViewInverse) * upPosition;
 
         vec3 normworldpos = normalize(worldpos);
+        vec3 normuppos = normalize(uppos);
         float dither = bayer16(texcoord * vec2(viewWidth, viewHeight));
 
         // reflections
@@ -30,36 +37,44 @@
         color = mix(color, reflection, max(1. - abs(dot(normal, normworldpos)), 0.) * (water ? .5 : .1));
 
         // light
-        Light lightnone = Light(vec3(0.), vec3(0.), 0., 0.);
         Light sun = Light(sunpos, vec3(1.), 1., -1.);
-        Light moon = Light(moonpos, vec3(.6, .8, 1.), .1, -1);
+        Light moon = Light(moonpos, vec3(.6, .8, 1.), .2, -1.);
 
-        Light[MAX_LIGHTS] lightlist = Light[MAX_LIGHTS](sun, lightnone, lightnone, lightnone, lightnone, lightnone, lightnone, lightnone);
+        Light[MAX_LIGHTS] lightlist;
+        lightlist[0] = sun;
+        lightlist[1] = moon;
+        uint lightcount = 2u;
+
+        // TODO : Light sampling
+
         vec3 diffuse = vec3(0.);
-        for (uint i = 0u; i < MAX_LIGHTS; i++) {
+        for (uint i = 0u; i < lightcount; i++) {
             Light light = lightlist[i];
-            if (light.strength == lightnone.strength) {
-                break;
-            }
             vec3 normlightpos = normalize(light.position);
+            vec3 normlightcolor = normalize(light.color);
             float ndotl = dot(normal, normlightpos);
+            if (light.range < 0.) {
+                light.strength *= clamp(pow(dot(normlightpos, normuppos) + .5, 2.), 0., 1.);
+                if (light.strength < 1e-3) {
+                    continue;
+                }
+            }
 
             // shadows
             vec3 ditheredlightpos = normalize(light.position + (dither * 2. - 1.) * 3.);
             Voxel voxshadow = voxeltrace(voxelpos, ditheredlightpos);
-            diffuse += normalize(light.color) * (light.strength * (1. - min(max(voxshadow.property.color.a, 1. - ndotl), 1.)));
+            diffuse += normlightcolor * (light.strength * (1. - min(max(voxshadow.property.color.a, 1. - ndotl), 1.)));
 
-            /*
             // volumetric
             Voxel voxvl = voxeltrace(worldpos * dither + playerpos, normlightpos);
-            color = mix(color, vec3(1.2, 1.1, 1.), (1. - voxvl.property.color.a) * .2);
-            */
-            
+            diffuse = mix(diffuse, normlightcolor, (1. - voxvl.property.color.a) * light.strength);
         }
-        color = mix(color / 3., color * 1.5, diffuse);
+        color += diffuse;
 
-        //Voxel v = voxeltrace(voxelpos, normworldpos);
-        //color = v.property.color.rgb;
+        /*
+        Voxel v = voxeltrace(voxelpos, normworldpos);
+        color = vec3(v.property.light);
+        */
     }
 
 #endif

@@ -57,13 +57,17 @@
 
     #ifdef FRAGMENT
         #ifdef COMPOSITE
+
             vec3 getndc(in vec2 texcoord, in sampler2D depthsampler) {
                 return vec3(texcoord, texture2D(depthsampler, texcoord).r);
             }
+
         #else
+
             vec3 getndc() {
                 return vec3(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z);
             }
+            
         #endif
     #endif
 #endif

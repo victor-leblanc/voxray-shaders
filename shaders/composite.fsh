@@ -11,6 +11,7 @@ uniform sampler2D depthtex1;
 
 uniform vec3 moonPosition;
 uniform vec3 sunPosition;
+uniform vec3 upPosition;
 
 #define RGBA32F 0
 const int colortex1Format = RGBA32F;
@@ -18,9 +19,6 @@ const vec4 shadowcolor0ClearColor = vec4(0., 0., 0., 0.);
 const float ambientOcclusionLevel = 0.;
 const float sunPathRotation = 32f; 
 
-#include "lib/sample.glsl"
-#include "lib/space.glsl"
-#include "lib/voxel.glsl"
 #include "program/common.glsl"
 
 /* DRAWBUFFERS:0 */

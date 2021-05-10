@@ -86,11 +86,13 @@ const int shadowMapResolution = 4096; // [512 4096 32768]
 
                     vec4 hitvoxel = texture2D(shadowcolor0, mappos); // read voxel on the shadowmap
                     VoxelProperty hitproperty = unpackvoxelproperty(hitvoxel);
-                    if (hitproperty.shape == 1) {
+                    //if (hitproperty.shape == 1) {
                         property.color += hitproperty.color * (1. - property.color.a);
-                    }
+                        property.shape = hitproperty.shape;
+                        property.light = hitproperty.light;
+                    //}
                 }
-                
+
                 float normdist = float(dist) / float(maxdist);
                 vec3 normal = s * vec3(equal(position, floor(position)));
                 return Voxel(property, position, normdist, normal);
