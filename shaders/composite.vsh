@@ -1,5 +1,5 @@
 #version 460 compatibility
-#define COMPOSITE
+#define COMPOSITE COMPOSITE
 #define VERTEX
 
 out vec2 texcoord;

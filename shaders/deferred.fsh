@@ -1,5 +1,5 @@
 #version 460 compatibility
-#define COMPOSITE
+#define COMPOSITE DEFERRED
 #define FRAGMENT
 
 in vec2 texcoord;
@@ -24,11 +24,6 @@ void main()
     float depth = texture2D(depthtex0, texcoord).x;
 
     computecommon(color, depth, false);
-
-/*
-    Voxel v = voxeltrace(voxelpos, fragpos);
-    color = v.color.rgb;
-*/
 
     gl_FragData[0] = vec4(color, 1.);
 }

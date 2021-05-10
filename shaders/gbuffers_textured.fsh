@@ -1,5 +1,5 @@
 #version 460 compatibility
-#define GBUFFER
+#define GBUFFER TEXTURED
 #define FRAGMENT
 
 in vec3 normal;

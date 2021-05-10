@@ -1,5 +1,5 @@
 #version 460 compatibility
-#define GBUFFER
+#define GBUFFER TEXTURED
 #define VERTEX
 
 attribute vec4 at_tangent;

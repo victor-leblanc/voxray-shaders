@@ -1,5 +1,5 @@
 #version 460 compatibility
-#define COMPOSITE
+#define COMPOSITE COMPOSITE
 #define FRAGMENT
 
 in vec2 texcoord;
