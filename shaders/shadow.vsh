@@ -2,35 +2,37 @@
 #define GBUFFER SHADOW
 #define VERTEX
 
-attribute vec3 mc_Entity;
-attribute vec2 mc_midTexCoord;
-attribute vec3 at_midBlock;
+in vec3 mc_Entity;
+in vec2 mc_midTexCoord;
+in vec3 at_midBlock;
 
-out vec4 color;
+out vec3 color;
 out vec2 texcoord;
-out flat uint entityid;
 
 #include "lib/space.glsl"
-#include "lib/voxel.glsl"
 
-#define DEFAULT_ENTITY_ID 10010 // cube non-emissive (see block.properties)
+const int shadowMapResolution = 3072;
+const ivec3 voxelMapResolution = ivec3(96, 32, 96);
 
 void main()
 {
-    color = gl_Color;
+    color = gl_Color.rgb;
     texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).st;
-    entityid = int(mc_Entity.x + 1e-3);
-    if (entityid == 0) {
-        entityid = DEFAULT_ENTITY_ID;
-    }
 
-    vec4 viewpos = (gl_ModelViewMatrix * gl_Vertex);
+    vec4 viewpos = gl_ModelViewMatrix * gl_Vertex;
     vec3 worldpos = (shadowModelViewInverse * viewpos).xyz;
+    ivec3 voxelpos = ivec3(worldpos + at_midBlock / 64.);
 
-    vec3 voxelpos = floor(worldpos + at_midBlock / 64.);
-    vec2 pixelpos = sign(texcoord - mc_midTexCoord.xy) / shadowMapResolution;
+    ivec3 midvoxmap = voxelMapResolution / 2;
+    
+    if (any(lessThan(voxelpos, -midvoxmap)) || any(greaterThan(voxelpos, midvoxmap))) { // voxel out of bound
+        gl_Position = vec4(0.);
+    } else {
+        voxelpos += midvoxmap;
+        vec2 pixelpos = voxelpos.xz;
 
-    vec2 packedvoxel = packvoxelposition(voxelpos) * 2. - 1. + pixelpos;
-    gl_Position = vec4(packedvoxel, 0., 1.);
-
+        pixelpos /= shadowMapResolution;
+        pixelpos = pixelpos * 2. - 1.;
+        gl_Position = vec4(pixelpos, 0., 1.);
+    }
 }
